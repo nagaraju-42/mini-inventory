@@ -1,16 +1,19 @@
-# Stage 1: Build the application
+# Stage 1: Build
 FROM maven:3.8.5-openjdk-17 AS build
 WORKDIR /app
-# Copy the pom.xml and source code
-COPY pom.xml .
-COPY src ./src
-# Build the application and skip tests for speed
+
+# Copy everything from the current directory (which Render sets as inventory-backend)
+COPY . .
+
+# Build the application
 RUN mvn clean package -DskipTests
 
-# Stage 2: Run the application
+# Stage 2: Run
 FROM eclipse-temurin:17-jdk-alpine
 WORKDIR /app
-# Copy the jar from the build stage to the runtime stage
+
+# Copy the generated jar
 COPY --from=build /app/target/*.jar app.jar
-VOLUME /tmp
+
+EXPOSE 8080
 ENTRYPOINT ["java","-jar","app.jar"]
